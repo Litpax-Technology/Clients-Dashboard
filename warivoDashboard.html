@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Warivo Status Board | Litpax Technology</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+/* ===== OEM Dashboard — Litpax ===== */
+:root {
+  --bg:        #F3F5F8;
+  --surface:   #FFFFFF;
+  --ink:       #16202E;
+  --muted:     #5B6676;
+  --line:      #E1E6EC;
+  --brand:     #1F4FD1;
+
+  --st-pending:  #D08A13;
+  --st-progress: #2E62D9;
+  --st-ready:    #7A4FD6;
+  --st-partial:  #0F8F86;
+  --st-done:     #2F8F4E;
+
+  --radius-lg: 14px;
+  --radius-sm: 6px;
+  --font: 'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+button, input { font-family: inherit; font-size: inherit; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* ---- Top bar ---- */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  position: relative; width: 26px; height: 14px;
+  border: 2px solid var(--brand); border-radius: 3px;
+}
+.brand-mark::before {           /* battery fill */
+  content: ''; position: absolute; inset: 2px; width: 60%;
+  background: var(--brand); border-radius: 1px;
+}
+.brand-mark::after {            /* battery terminal */
+  content: ''; position: absolute; right: -5px; top: 3px;
+  width: 3px; height: 4px; background: var(--brand); border-radius: 0 1px 1px 0;
+}
+.brand-name { font-weight: 700; font-size: 16px; }
+.brand-sub  { color: var(--muted); font-size: 13px; }
+.brand-sub strong { color: var(--ink); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.updated { color: var(--muted); font-size: 13px; }
+
+.btn {
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500;
+}
+.btn:hover { border-color: var(--brand); color: var(--brand); }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+/* ---- Screens ---- */
+.screen { min-height: 70vh; display: grid; place-items: center; padding: 24px; }
+.screen-box { text-align: center; max-width: 420px; color: var(--muted); }
+.spinner {
+  width: 28px; height: 28px; margin: 0 auto 12px;
+  border: 3px solid var(--line); border-top-color: var(--brand); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
+
+/* ---- Filters ---- */
+.filters {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  margin-bottom: 20px;
+}
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 500;
+}
+.chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.custom-range { display: flex; gap: 10px; flex-wrap: wrap; }
+.custom-range label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.custom-range input {
+  border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 5px 8px;
+  background: var(--surface); color: var(--ink);
+}
+.filter-note { margin: 0; font-size: 13px; color: var(--muted); flex-basis: 100%; }
+
+/* ---- Blocks ---- */
+.block {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 8px;
+  margin-bottom: 20px;
+}
+.block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.block-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.block-stats { margin: 0; color: var(--muted); font-size: 14px; }
+.block-stats b { color: var(--ink); font-weight: 600; }
+
+/* ---- Flow bar (battery-cell style) ---- */
+.flow {
+  position: relative;
+  display: flex; gap: 3px;
+  height: 22px; margin: 16px 10px 12px 0;
+  padding: 3px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+}
+.flow::after {                    /* terminal nub */
+  content: ''; position: absolute; right: -8px; top: 50%;
+  width: 5px; height: 10px; margin-top: -5px;
+  background: var(--ink); border-radius: 0 2px 2px 0;
+}
+.flow-seg { height: 100%; border-radius: 2px; min-width: 6px; transition: opacity .15s; }
+.flow-empty { flex: 1; background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 9px); border-radius: 2px; }
+.flow.has-filter .flow-seg:not(.on) { opacity: .25; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 14px; }
+.leg {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); background: var(--surface);
+  border-radius: var(--radius-sm); padding: 6px 10px; cursor: pointer;
+  color: var(--ink); font-size: 13px;
+}
+.leg .dot { width: 10px; height: 10px; border-radius: 2px; }
+.leg .n { font-weight: 700; font-size: 15px; }
+.leg.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.leg:hover { border-color: var(--muted); }
+
+/* ---- Tables ---- */
+.table-wrap { overflow-x: auto; margin: 0 -22px; padding: 0 22px 14px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px; }
+.tbl th {
+  text-align: left; font-weight: 600; color: var(--muted); font-size: 13px;
+  padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.tbl td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .num { text-align: right; white-space: nowrap; }
+.tbl .nowrap { white-space: nowrap; }
+.tbl .wrap { max-width: 260px; }
+.tbl .sub { display: block; color: var(--muted); font-size: 12px; }
+.tbl .empty td { text-align: center; color: var(--muted); padding: 22px; }
+
+.order-row { cursor: pointer; }
+.order-row:hover td { background: #F8FAFC; }
+.toggle {
+  border: 0; background: none; cursor: pointer; color: var(--muted);
+  width: 22px; height: 22px; border-radius: 4px; font-size: 12px;
+}
+.order-row.open .toggle { transform: rotate(90deg); }
+.detail-row td { background: #F8FAFC; padding: 0 10px 14px 42px; }
+.items { width: 100%; border-collapse: collapse; font-size: 13px; }
+.items th, .items td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.items th { color: var(--muted); font-weight: 600; }
+.items .num { text-align: right; }
+.disp-list { margin: 0; padding: 0; list-style: none; color: var(--muted); }
+.disp-list li + li { margin-top: 2px; }
+
+/* ---- Status pill ---- */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 13px; font-weight: 500;
+}
+.pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.s-pending  { color: var(--st-pending); }
+.s-progress { color: var(--st-progress); }
+.s-ready    { color: var(--st-ready); }
+.s-partial  { color: var(--st-partial); }
+.s-done     { color: var(--st-done); }
+
+.bg-pending  { background: var(--st-pending); }
+.bg-progress { background: var(--st-progress); }
+.bg-ready    { background: var(--st-ready); }
+.bg-partial  { background: var(--st-partial); }
+.bg-done     { background: var(--st-done); }
+
+.notice { color: var(--muted); font-size: 14px; padding: 12px 0 16px; }
+
+.foot { text-align: center; color: var(--muted); font-size: 13px; padding-top: 8px; }
+
+/* ---- Mobile ---- */
+@media (max-width: 700px) {
+  .topbar { padding: 12px 16px; flex-wrap: wrap; }
+  main { padding: 16px 12px 32px; }
+  .block { padding: 18px 16px 6px; }
+  .table-wrap { margin: 0 -16px; padding: 0 16px 12px; }
+  .updated { font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation-duration: 2s; }
+  .flow-seg { transition: none; }
+}
+
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <div class="brand-name">Litpax Technology</div>
+        <div class="brand-sub">Status board for <strong id="clientName">—</strong></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="updated" id="updatedAt">Loading…</span>
+      <button class="btn" id="refreshBtn" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <!-- Loading / error screen -->
+  <div class="screen" id="screen">
+    <div class="screen-box">
+      <div class="spinner" id="spinner"></div>
+      <p id="screenMsg">Loading your dashboard…</p>
+    </div>
+  </div>
+
+  <main id="app" hidden>
+
+    <section class="filters" aria-label="Date range">
+      <div class="chips" role="group" aria-label="Quick range">
+        <button class="chip" data-days="7"   type="button">7 days</button>
+        <button class="chip" data-days="30"  type="button">30 days</button>
+        <button class="chip" data-days="90"  type="button">90 days</button>
+        <button class="chip" data-days="all" type="button">All time</button>
+      </div>
+      <div class="custom-range">
+        <label>From <input type="date" id="fromDate"></label>
+        <label>To <input type="date" id="toDate"></label>
+      </div>
+      <p class="filter-note">Open items always show. Completed items follow the date range.</p>
+    </section>
+
+    <!-- ORDERS -->
+    <section class="block" id="ordersBlock">
+      <div class="block-head">
+        <h2>Orders</h2>
+        <p class="block-stats" id="ordersStats"></p>
+      </div>
+      <div class="flow" id="ordersFlow"></div>
+      <div class="legend" id="ordersLegend"></div>
+      <div class="table-wrap">
+        <table class="tbl" id="ordersTable">
+          <thead>
+            <tr>
+              <th></th><th>Order ID</th><th>Order date</th><th>Models</th>
+              <th class="num">Qty</th><th class="num">Produced</th><th class="num">Dispatched</th>
+              <th>Status</th><th>Last dispatch</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SERVICE CALLS -->
+    <section class="block" id="callsBlock">
+      <div class="block-head">
+        <h2>Service calls</h2>
+        <p class="block-stats" id="callsStats"></p>
+      </div>
+      <div class="flow" id="callsFlow"></div>
+      <div class="legend" id="callsLegend"></div>
+      <div class="table-wrap">
+        <table class="tbl" id="callsTable">
+          <thead>
+            <tr>
+              <th>Call no.</th><th>Date</th><th>Customer</th><th>Issue</th>
+              <th>Solution</th><th>Status</th><th>Closed on</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REPAIRS -->
+    <section class="block" id="repairsBlock">
+      <div class="block-head">
+        <h2>Repairs</h2>
+        <p class="block-stats" id="repairsStats"></p>
+      </div>
+      <div class="flow" id="repairsFlow"></div>
+      <div class="legend" id="repairsLegend"></div>
+      <div class="table-wrap">
+        <table class="tbl" id="repairsTable">
+          <thead>
+            <tr>
+              <th>Repair ID</th><th>Received</th><th>Customer</th><th>Battery model</th><th>Serial no.</th>
+              <th>Problem</th><th class="num">Battery in / out</th><th class="num">Charger in / out</th>
+              <th>Status</th><th>Sent back on</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="foot">Data refreshes every 5 minutes. For any query, contact your Litpax account manager.</footer>
+  </main>
+
+  <script src="config.js"></script>
+<script>
+// =============================================
+// OEM Dashboard — app.js
+// Link format: index.html?k=<token>
+// =============================================
+(function () {
+  'use strict';
+
+  const STATUS = {
+    orders: [
+      { key: 'Pending',              label: 'Pending',            cls: 'pending'  },
+      { key: 'In Production',        label: 'In production',      cls: 'progress' },
+      { key: 'Ready for Dispatch',   label: 'Ready for dispatch', cls: 'ready'    },
+      { key: 'Partially Dispatched', label: 'Partly dispatched',  cls: 'partial'  },
+      { key: 'Dispatched',           label: 'Dispatched',         cls: 'done'     }
+    ],
+    calls: [
+      { key: 'Open',   label: 'Open',   cls: 'pending' },
+      { key: 'Solved', label: 'Solved', cls: 'done'    }
+    ],
+    repairs: [
+      { key: 'Received',         label: 'With us for repair', cls: 'pending' },
+      { key: 'Partial Dispatch', label: 'Partly sent back',   cls: 'partial' },
+      { key: 'Dispatched',       label: 'Sent back',          cls: 'done'    }
+    ]
+  };
+
+  const state = {
+    data: null,
+    from: null, to: null,
+    filter: { orders: null, calls: null, repairs: null },
+    open: {},
+    loading: false,
+    loadedAt: 0
+  };
+
+  const token = (new URLSearchParams(location.search).get('k') || '').trim();
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- helpers ----------
+  function esc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function fmtN(n) { return Number(n || 0).toLocaleString('en-IN'); }
+  function iso(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function def(section, key) {
+    return STATUS[section].find((d) => d.key === key) || { label: key, cls: 'pending' };
+  }
+  function pill(section, key) {
+    const d = def(section, key);
+    return '<span class="pill s-' + d.cls + '">' + esc(d.label) + '</span>';
+  }
+  function emptyRow(cols, msg) {
+    return '<tr class="empty"><td colspan="' + cols + '">' + esc(msg) + '</td></tr>';
+  }
+  function inRange(isOpen, ts) {
+    if (isOpen) return true;
+    if (state.from == null && state.to == null) return true;
+    if (!ts) return false;
+    if (state.from != null && ts < state.from) return false;
+    if (state.to != null && ts > state.to) return false;
+    return true;
+  }
+
+  // ---------- JSONP ----------
+  function jsonp(url, timeout) {
+    return new Promise((resolve, reject) => {
+      const cb = 'oemcb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+      const s = document.createElement('script');
+      const t = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, timeout || 30000);
+      function cleanup() { clearTimeout(t); try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); }
+      window[cb] = (d) => { cleanup(); resolve(d); };
+      s.onerror = () => { cleanup(); reject(new Error('network')); };
+      s.src = url + (url.indexOf('?') > -1 ? '&' : '?') + 'callback=' + cb;
+      document.body.appendChild(s);
+    });
+  }
+
+  // ---------- screens ----------
+  function showScreen(msg, spinning) {
+    $('screen').hidden = false;
+    $('app').hidden = true;
+    $('spinner').hidden = !spinning;
+    $('screenMsg').textContent = msg;
+    $('updatedAt').textContent = '';
+  }
+
+  // ---------- load ----------
+  async function load() {
+    if (state.loading) return;
+    state.loading = true;
+    $('refreshBtn').disabled = true;
+    if (state.data) $('updatedAt').textContent = 'Refreshing…';
+    try {
+      const url = CONFIG.API_URL + '?action=getDashboard&k=' + encodeURIComponent(token) + '&_=' + Date.now();
+      const res = await jsonp(url);
+      if (!res || !res.ok) { fail(res && res.msg === 'invalid'); return; }
+      state.data = res;
+      state.loadedAt = Date.now();
+      $('clientName').textContent = res.client;
+      document.title = 'Status board | ' + res.client;
+      $('updatedAt').textContent = 'Updated ' + res.updatedAt;
+      $('screen').hidden = true;
+      $('app').hidden = false;
+      render();
+    } catch (e) {
+      fail(false);
+    } finally {
+      state.loading = false;
+      $('refreshBtn').disabled = false;
+    }
+  }
+
+  function fail(invalid) {
+    if (invalid) {
+      state.data = null;
+      showScreen('This link is not active. Please ask Litpax for a new dashboard link.', false);
+      $('refreshBtn').hidden = true;
+      return;
+    }
+    if (state.data) {
+      $('updatedAt').textContent = 'Refresh failed. Showing data from ' + state.data.updatedAt;
+    } else {
+      showScreen('The dashboard could not load. Check your internet connection and press Refresh.', false);
+    }
+  }
+
+  // ---------- range ----------
+  function setDays(days) {
+    document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('active', c.dataset.days === String(days)));
+    if (days === 'all') {
+      state.from = null; state.to = null;
+      $('fromDate').value = ''; $('toDate').value = '';
+    } else {
+      const to = new Date(); to.setHours(23, 59, 59, 999);
+      const from = new Date(); from.setHours(0, 0, 0, 0); from.setDate(from.getDate() - (Number(days) - 1));
+      state.from = from.getTime(); state.to = to.getTime();
+      $('fromDate').value = iso(from); $('toDate').value = iso(to);
+    }
+    render();
+  }
+
+  function onCustomRange() {
+    document.querySelectorAll('.chip').forEach((c) => c.classList.remove('active'));
+    const f = $('fromDate').value, t = $('toDate').value;
+    state.from = f ? new Date(f + 'T00:00:00').getTime() : null;
+    state.to   = t ? new Date(t + 'T23:59:59').getTime() : null;
+    render();
+  }
+
+  // ---------- flow bar + legend ----------
+  function renderFlow(section, counts) {
+    const defs = STATUS[section];
+    const total = defs.reduce((s, d) => s + (counts[d.key] || 0), 0);
+    const f = state.filter[section];
+    const flow = $(section + 'Flow');
+    flow.classList.toggle('has-filter', !!f);
+    flow.innerHTML = total
+      ? defs.filter((d) => counts[d.key]).map((d) =>
+          '<div class="flow-seg bg-' + d.cls + (f === d.key ? ' on' : '') + '" style="flex:' + counts[d.key] + ' 1 0"' +
+          ' title="' + esc(d.label) + ': ' + counts[d.key] + '"></div>').join('')
+      : '<div class="flow-empty"></div>';
+
+    $(section + 'Legend').innerHTML = defs.map((d) =>
+      '<button type="button" class="leg' + (f === d.key ? ' on' : '') + '" data-sec="' + section + '" data-key="' + esc(d.key) + '"' +
+      ' aria-pressed="' + (f === d.key) + '"><span class="dot bg-' + d.cls + '"></span>' +
+      '<span class="n">' + fmtN(counts[d.key] || 0) + '</span>' + esc(d.label) + '</button>').join('');
+  }
+
+  function sourceDown(section, cols, msg) {
+    $(section + 'Flow').innerHTML = '<div class="flow-empty"></div>';
+    $(section + 'Legend').innerHTML = '';
+    $(section + 'Stats').textContent = '';
+    $(section + 'Table').querySelector('tbody').innerHTML = emptyRow(cols, msg);
+  }
+
+  // ---------- render ----------
+  function render() {
+    if (!state.data) return;
+    renderOrders();
+    renderCalls();
+    renderRepairs();
+  }
+
+  function renderOrders() {
+    const list = state.data.orders;
+    if (list === null) { sourceDown('orders', 9, 'Order data is not available right now. Please try again later.'); return; }
+
+    const visible = list.filter((o) => inRange(o.status !== 'Dispatched', o.lastDispatchTs || o.ts));
+    const counts = {};
+    visible.forEach((o) => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    renderFlow('orders', counts);
+
+    const q = visible.reduce((a, o) => { a.qty += o.qty; a.prod += o.produced; a.disp += o.dispatched; return a; }, { qty: 0, prod: 0, disp: 0 });
+    $('ordersStats').innerHTML =
+      '<b>' + fmtN(visible.length) + '</b> orders, <b>' + fmtN(q.qty) + '</b> batteries ordered, <b>' +
+      fmtN(q.prod) + '</b> produced, <b>' + fmtN(q.disp) + '</b> dispatched';
+
+    const rows = state.filter.orders ? visible.filter((o) => o.status === state.filter.orders) : visible;
+    const tb = $('ordersTable').querySelector('tbody');
+    if (!rows.length) { tb.innerHTML = emptyRow(9, 'No orders for this selection.'); return; }
+
+    tb.innerHTML = rows.map((o) => {
+      const open = !!state.open[o.orderId];
+      const models = Array.from(new Set(o.items.map((i) => i.model).filter(Boolean))).join(', ');
+      return '<tr class="order-row' + (open ? ' open' : '') + '" data-oid="' + esc(o.orderId) + '">' +
+        '<td><button class="toggle" type="button" aria-expanded="' + open + '" aria-label="Show items of ' + esc(o.orderId) + '">▶</button></td>' +
+        '<td class="nowrap"><b>' + esc(o.orderId) + '</b></td>' +
+        '<td class="nowrap">' + esc(o.date || '—') + '</td>' +
+        '<td class="wrap">' + esc(models || '—') + '</td>' +
+        '<td class="num">' + fmtN(o.qty) + '</td>' +
+        '<td class="num">' + fmtN(o.produced) + '</td>' +
+        '<td class="num">' + fmtN(o.dispatched) + '</td>' +
+        '<td>' + pill('orders', o.status) + '</td>' +
+        '<td class="nowrap">' + esc(o.lastDispatch || '—') + '</td>' +
+      '</tr>' + (open ? detailRow(o) : '');
+    }).join('');
+  }
+
+  function detailRow(o) {
+    return '<tr class="detail-row"><td colspan="9"><table class="items"><thead><tr>' +
+      '<th>Model</th><th>Type</th><th class="num">Qty</th><th class="num">Produced</th>' +
+      '<th class="num">Dispatched</th><th>Status</th><th>Dispatch details</th></tr></thead><tbody>' +
+      o.items.map((i) =>
+        '<tr><td>' + esc(i.model || '—') + '</td><td>' + esc(i.type || '—') + '</td>' +
+        '<td class="num">' + fmtN(i.qty) + '</td><td class="num">' + fmtN(i.produced) + '</td>' +
+        '<td class="num">' + fmtN(i.dispatched) + '</td><td>' + pill('orders', i.status) + '</td>' +
+        '<td>' + dispList(i.dispatches) + '</td></tr>').join('') +
+      '</tbody></table></td></tr>';
+  }
+
+  function dispList(arr) {
+    if (!arr || !arr.length) return '<span class="sub">Not dispatched yet</span>';
+    return '<ul class="disp-list">' + arr.map((d) =>
+      '<li>' + esc([d.date, fmtN(d.qty) + ' pcs', d.transport, d.vehicle, d.lr ? 'LR ' + d.lr : ''].filter(Boolean).join(', ')) + '</li>'
+    ).join('') + '</ul>';
+  }
+
+  function renderCalls() {
+    const list = state.data.calls;
+    if (list === null) { sourceDown('calls', 7, 'Service call data is not available right now.'); return; }
+
+    const visible = list.filter((c) => inRange(!c.closed, c.closedTs || c.ts));
+    const counts = { Open: 0, Solved: 0 };
+    visible.forEach((c) => { counts[c.closed ? 'Solved' : 'Open']++; });
+    renderFlow('calls', counts);
+    $('callsStats').innerHTML =
+      '<b>' + fmtN(visible.length) + '</b> calls, <b>' + fmtN(counts.Solved) + '</b> solved, <b>' + fmtN(counts.Open) + '</b> open';
+
+    const f = state.filter.calls;
+    const rows = f ? visible.filter((c) => (c.closed ? 'Solved' : 'Open') === f) : visible;
+    const tb = $('callsTable').querySelector('tbody');
+    if (!rows.length) { tb.innerHTML = emptyRow(7, 'No service calls for this selection.'); return; }
+
+    tb.innerHTML = rows.map((c) =>
+      '<tr><td class="nowrap">' + esc(c.srNo) + '</td>' +
+      '<td class="nowrap">' + esc(c.date || '—') + '</td>' +
+      '<td>' + esc(c.customer || '—') + '</td>' +
+      '<td class="wrap">' + esc(c.about || '—') + '</td>' +
+      '<td class="wrap">' + esc(c.solution || '—') + '</td>' +
+      '<td>' + pill('calls', c.closed ? 'Solved' : 'Open') + '</td>' +
+      '<td class="nowrap">' + esc(c.closedDate || '—') +
+        (c.timeTaken ? '<span class="sub">' + esc(c.timeTaken) + '</span>' : '') + '</td></tr>'
+    ).join('');
+  }
+
+  function renderRepairs() {
+    const list = state.data.repairs;
+    if (list === null) { sourceDown('repairs', 10, 'Repair data is not available right now.'); return; }
+
+    const visible = list.filter((r) => inRange(r.pending > 0, r.dispatchTs || r.ts));
+    const counts = {};
+    visible.forEach((r) => { counts[r.status] = (counts[r.status] || 0) + 1; });
+    renderFlow('repairs', counts);
+
+    const t = visible.reduce((a, r) => {
+      a.bIn += r.battRcv; a.bOut += r.battDisp; a.cIn += r.chgRcv; a.cOut += r.chgDisp; return a;
+    }, { bIn: 0, bOut: 0, cIn: 0, cOut: 0 });
+    let stats = '<b>' + fmtN(t.bIn) + '</b> batteries received, <b>' + fmtN(t.bOut) + '</b> sent back, <b>' +
+      fmtN(Math.max(0, t.bIn - t.bOut)) + '</b> still with us';
+    if (t.cIn > 0) stats += '. Chargers: <b>' + fmtN(t.cIn) + '</b> received, <b>' + fmtN(t.cOut) + '</b> sent back';
+    $('repairsStats').innerHTML = stats;
+
+    const rows = state.filter.repairs ? visible.filter((r) => r.status === state.filter.repairs) : visible;
+    const tb = $('repairsTable').querySelector('tbody');
+    if (!rows.length) { tb.innerHTML = emptyRow(10, 'No repairs for this selection.'); return; }
+
+    tb.innerHTML = rows.map((r) =>
+      '<tr><td class="nowrap"><b>' + esc(r.repairId) + '</b></td>' +
+      '<td class="nowrap">' + esc(r.date || '—') + '</td>' +
+      '<td>' + esc(r.customer || '—') + '</td>' +
+      '<td>' + esc(r.batteryModel || '—') + (r.chargerModel ? '<span class="sub">Charger: ' + esc(r.chargerModel) + '</span>' : '') + '</td>' +
+      '<td class="nowrap">' + esc(r.batterySr || '—') + '</td>' +
+      '<td class="wrap">' + esc(r.problem || r.problemDesc || '—') +
+        (r.actualProblem ? '<span class="sub">Found: ' + esc(r.actualProblem) + '</span>' : '') + '</td>' +
+      '<td class="num">' + fmtN(r.battRcv) + ' / ' + fmtN(r.battDisp) + '</td>' +
+      '<td class="num">' + (r.chgRcv ? fmtN(r.chgRcv) + ' / ' + fmtN(r.chgDisp) : '—') + '</td>' +
+      '<td>' + pill('repairs', r.status) + '</td>' +
+      '<td class="nowrap">' + esc(r.dispatchDate || '—') + '</td></tr>'
+    ).join('');
+  }
+
+  // ---------- events ----------
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (chip) { setDays(chip.dataset.days); return; }
+
+    const leg = e.target.closest('.leg');
+    if (leg) {
+      const sec = leg.dataset.sec, key = leg.dataset.key;
+      state.filter[sec] = state.filter[sec] === key ? null : key;
+      render();
+      return;
+    }
+
+    const row = e.target.closest('.order-row');
+    if (row) {
+      const id = row.dataset.oid;
+      state.open[id] = !state.open[id];
+      renderOrders();
+    }
+  });
+
+  $('fromDate').addEventListener('change', onCustomRange);
+  $('toDate').addEventListener('change', onCustomRange);
+  $('refreshBtn').addEventListener('click', load);
+
+  // Auto-refresh — sirf tab visible ho tab
+  setInterval(() => { if (!document.hidden && state.data) load(); }, CONFIG.REFRESH_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.data && Date.now() - state.loadedAt > CONFIG.REFRESH_MS) load();
+  });
+
+  // ---------- init ----------
+  if (!token) {
+    showScreen('This link is incomplete. Please use the full dashboard link shared by Litpax.', false);
+    $('refreshBtn').hidden = true;
+  } else {
+    setDays(CONFIG.DEFAULT_DAYS);
+    load();
+  }
+})();
+
+</script>
+</body>
+</html>
