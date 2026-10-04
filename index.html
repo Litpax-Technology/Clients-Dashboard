@@ -4,29 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Warivo Status Board | Litpax Technology</title>
+  <title>Status board | Litpax Technology</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-/* ===== OEM Dashboard — Litpax ===== */
+/* =========================================================
+   Litpax — OEM status board
+   ========================================================= */
 :root {
-  --bg:        #F3F5F8;
-  --surface:   #FFFFFF;
-  --ink:       #16202E;
-  --muted:     #5B6676;
-  --line:      #E1E6EC;
-  --brand:     #1F4FD1;
+  --page:    #EEF1F5;
+  --surface: #FFFFFF;
+  --ink:     #142033;
+  --muted:   #5E6B7D;
+  --line:    #DDE3EA;
+  --band:    #10233F;
+  --band-2:  #1A3358;
+  --accent:  #2F6FED;
 
-  --st-pending:  #D08A13;
-  --st-progress: #2E62D9;
-  --st-ready:    #7A4FD6;
-  --st-partial:  #0F8F86;
-  --st-done:     #2F8F4E;
+  /* fills (meter, bars, dots) */
+  --f-pending:  #E8A33A;
+  --f-progress: #3B7BF0;
+  --f-ready:    #8B6CF0;
+  --f-partial:  #18A89E;
+  --f-done:     #2FAE66;
 
-  --radius-lg: 14px;
-  --radius-sm: 6px;
   --font: 'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif;
+  --wrap: 1240px;
 }
 
 * { box-sizing: border-box; }
@@ -34,359 +38,399 @@
 html, body { margin: 0; }
 body {
   font-family: var(--font);
-  background: var(--bg);
+  background: var(--page);
   color: var(--ink);
   font-size: 15px;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }
-button, input { font-family: inherit; font-size: inherit; }
-:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+button, input, select { font-family: inherit; font-size: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
 
-/* ---- Top bar ---- */
-.topbar {
-  position: sticky; top: 0; z-index: 10;
+/* ---------- Header band ---------- */
+.band { background: var(--band); color: #fff; }
+.band-top {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 14px 24px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  padding-top: 18px; padding-bottom: 18px;
 }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-mark {
-  position: relative; width: 26px; height: 14px;
-  border: 2px solid var(--brand); border-radius: 3px;
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; }
+.brand-cell {
+  position: relative; width: 28px; height: 15px;
+  border: 2px solid #fff; border-radius: 3px;
 }
-.brand-mark::before {           /* battery fill */
-  content: ''; position: absolute; inset: 2px; width: 60%;
-  background: var(--brand); border-radius: 1px;
-}
-.brand-mark::after {            /* battery terminal */
-  content: ''; position: absolute; right: -5px; top: 3px;
-  width: 3px; height: 4px; background: var(--brand); border-radius: 0 1px 1px 0;
-}
-.brand-name { font-weight: 700; font-size: 16px; }
-.brand-sub  { color: var(--muted); font-size: 13px; }
-.brand-sub strong { color: var(--ink); }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-.updated { color: var(--muted); font-size: 13px; }
+.brand-cell::before { content: ''; position: absolute; left: 2px; top: 2px; bottom: 2px; width: 62%; background: var(--f-done); border-radius: 1px; }
+.brand-cell::after  { content: ''; position: absolute; right: -5px; top: 3px; width: 3px; height: 5px; background: #fff; border-radius: 0 1px 1px 0; }
 
-.btn {
-  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-  padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 500;
+.status-line { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #C3CEDD; }
+.live { display: inline-flex; align-items: center; gap: 8px; }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--f-done); box-shadow: 0 0 0 3px rgba(47,174,102,.25); }
+.live.stale i { background: var(--f-pending); box-shadow: 0 0 0 3px rgba(232,163,58,.25); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px solid rgba(255,255,255,.28); color: #fff;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px;
 }
-.btn:hover { border-color: var(--brand); color: var(--brand); }
-.btn[disabled] { opacity: .5; cursor: default; }
+.btn-ghost:hover { border-color: #fff; }
+.btn-ghost[disabled] { opacity: .5; cursor: default; }
+.btn-ghost svg { width: 14px; height: 14px; }
+.spinning svg { animation: spin 1s linear infinite; }
 
-/* ---- Screens ---- */
-.screen { min-height: 70vh; display: grid; place-items: center; padding: 24px; }
-.screen-box { text-align: center; max-width: 420px; color: var(--muted); }
-.spinner {
-  width: 28px; height: 28px; margin: 0 auto 12px;
-  border: 3px solid var(--line); border-top-color: var(--brand); border-radius: 50%;
-  animation: spin .8s linear infinite;
+.hero { padding-top: 10px; padding-bottom: 30px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 32px; align-items: end; }
+.hero-client { font-size: 13px; color: #C3CEDD; margin: 0 0 4px; }
+.hero h1 { margin: 0; font-size: 44px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em; }
+.hero-sub { margin: 10px 0 0; color: #C3CEDD; font-size: 14px; max-width: 42ch; }
+
+/* The memorable bit: battery-pack fulfilment meter */
+.meter-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.meter-title { font-size: 14px; color: #C3CEDD; }
+.meter-title b { color: #fff; font-size: 22px; font-weight: 700; margin-right: 6px; }
+.meter-pct { font-size: 14px; color: #C3CEDD; }
+.meter-pct b { color: #fff; font-size: 22px; font-weight: 700; }
+.meter {
+  position: relative; display: flex; gap: 4px;
+  height: 58px; padding: 6px; margin-right: 12px;
+  border: 3px solid rgba(255,255,255,.9); border-radius: 12px;
+  background: var(--band-2);
 }
+.meter::after {
+  content: ''; position: absolute; right: -12px; top: 50%;
+  width: 8px; height: 20px; margin-top: -10px;
+  background: rgba(255,255,255,.9); border-radius: 0 4px 4px 0;
+}
+.meter-seg { height: 100%; border-radius: 5px; min-width: 6px; transform-origin: left center; animation: grow .7s ease-out both; }
+.meter-empty { flex: 1; border-radius: 5px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 8px, transparent 8px 12px); }
+.meter.loading .meter-empty { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes pulse { 50% { opacity: .4; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
+.meter-legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; font-size: 13px; color: #C3CEDD; }
+.meter-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.meter-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.meter-legend b { color: #fff; font-weight: 600; }
 
-/* ---- Filters ---- */
-.filters {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
-  margin-bottom: 20px;
+/* ---------- Tabs ---------- */
+.tabs-bar { position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; overflow-x: auto; }
+.tab {
+  flex: 0 0 auto; background: none; border: 0; cursor: pointer; text-align: left;
+  padding: 14px 18px 12px; border-bottom: 3px solid transparent; margin-bottom: -1px;
 }
-.chips { display: flex; gap: 6px; flex-wrap: wrap; }
-.chip {
-  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
-  padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 500;
-}
-.chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
-.custom-range { display: flex; gap: 10px; flex-wrap: wrap; }
-.custom-range label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-.custom-range input {
-  border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 5px 8px;
-  background: var(--surface); color: var(--ink);
-}
-.filter-note { margin: 0; font-size: 13px; color: var(--muted); flex-basis: 100%; }
+.tab .t-name { display: block; font-weight: 600; font-size: 15px; }
+.tab .t-meta { display: block; font-size: 13px; color: var(--muted); }
+.tab:hover .t-name { color: var(--accent); }
+.tab.active { border-bottom-color: var(--accent); }
+.tab.active .t-name { color: var(--accent); }
+.t-meta .alert { color: #9A5B00; font-weight: 600; }
 
-/* ---- Blocks ---- */
-.block {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  padding: 22px 22px 8px;
-  margin-bottom: 20px;
+/* ---------- Toolbar ---------- */
+main { padding-top: 22px; padding-bottom: 40px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 16px; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); }
+.seg button.active { background: var(--ink); color: #fff; }
+.dates { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.field {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px;
+  padding: 6px 10px; font-size: 13px; color: var(--ink);
 }
-.block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.block-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
-.block-stats { margin: 0; color: var(--muted); font-size: 14px; }
-.block-stats b { color: var(--ink); font-weight: 600; }
+.search { position: relative; margin-left: auto; }
+.search svg { position: absolute; left: 10px; top: 50%; width: 15px; height: 15px; margin-top: -7.5px; color: var(--muted); }
+.search input { padding-left: 32px; width: 240px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn svg { width: 14px; height: 14px; }
+.range-note { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--muted); }
 
-/* ---- Flow bar (battery-cell style) ---- */
-.flow {
-  position: relative;
-  display: flex; gap: 3px;
-  height: 22px; margin: 16px 10px 12px 0;
-  padding: 3px;
-  border: 2px solid var(--ink);
-  border-radius: 6px;
-}
-.flow::after {                    /* terminal nub */
-  content: ''; position: absolute; right: -8px; top: 50%;
-  width: 5px; height: 10px; margin-top: -5px;
-  background: var(--ink); border-radius: 0 2px 2px 0;
-}
-.flow-seg { height: 100%; border-radius: 2px; min-width: 6px; transition: opacity .15s; }
-.flow-empty { flex: 1; background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 9px); border-radius: 2px; }
-.flow.has-filter .flow-seg:not(.on) { opacity: .25; }
-
-.legend { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 14px; }
-.leg {
+/* ---------- Panel ---------- */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip {
   display: inline-flex; align-items: center; gap: 8px;
   border: 1px solid var(--line); background: var(--surface);
-  border-radius: var(--radius-sm); padding: 6px 10px; cursor: pointer;
-  color: var(--ink); font-size: 13px;
+  border-radius: 999px; padding: 5px 12px 5px 10px; cursor: pointer; font-size: 13px;
 }
-.leg .dot { width: 10px; height: 10px; border-radius: 2px; }
-.leg .n { font-weight: 700; font-size: 15px; }
-.leg.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-.leg:hover { border-color: var(--muted); }
+.fchip i { width: 8px; height: 8px; border-radius: 50%; }
+.fchip b { font-weight: 700; }
+.fchip:hover { border-color: var(--muted); }
+.fchip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.panel-sum { margin: 0; font-size: 13px; color: var(--muted); }
+.panel-sum b { color: var(--ink); }
 
-/* ---- Tables ---- */
-.table-wrap { overflow-x: auto; margin: 0 -22px; padding: 0 22px 14px; }
-.tbl { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px; }
+/* ---------- Table ---------- */
+.tbl-wrap { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
 .tbl th {
-  text-align: left; font-weight: 600; color: var(--muted); font-size: 13px;
-  padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  text-align: left; font-weight: 600; font-size: 12.5px; color: var(--muted);
+  padding: 10px 14px; background: #F7F9FB; border-bottom: 1px solid var(--line); white-space: nowrap;
 }
-.tbl td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.tbl tr:last-child td { border-bottom: 0; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
 .tbl .num { text-align: right; white-space: nowrap; }
-.tbl .nowrap { white-space: nowrap; }
-.tbl .wrap { max-width: 260px; }
-.tbl .sub { display: block; color: var(--muted); font-size: 12px; }
-.tbl .empty td { text-align: center; color: var(--muted); padding: 22px; }
+.tbl .nw  { white-space: nowrap; }
+.tbl .wr  { min-width: 180px; max-width: 300px; }
+.tbl .id  { font-weight: 600; }
+.sub { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.empty-row td { text-align: center; color: var(--muted); padding: 40px 14px; }
 
 .order-row { cursor: pointer; }
-.order-row:hover td { background: #F8FAFC; }
-.toggle {
-  border: 0; background: none; cursor: pointer; color: var(--muted);
-  width: 22px; height: 22px; border-radius: 4px; font-size: 12px;
-}
-.order-row.open .toggle { transform: rotate(90deg); }
-.detail-row td { background: #F8FAFC; padding: 0 10px 14px 42px; }
+.order-row:hover td { background: #FAFBFD; }
+.chev { border: 0; background: none; cursor: pointer; width: 26px; height: 26px; border-radius: 6px; color: var(--muted); display: grid; place-items: center; }
+.chev svg { width: 14px; height: 14px; transition: transform .15s; }
+.order-row.open .chev svg { transform: rotate(90deg); }
+.order-row.open td { background: #FAFBFD; border-bottom-color: transparent; }
+
+/* order progress */
+.prog { min-width: 190px; }
+.prog-bar { display: flex; height: 8px; border-radius: 4px; background: #E7EBF0; overflow: hidden; }
+.prog-bar span { height: 100%; }
+.prog-txt { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.prog-txt b { color: var(--ink); font-weight: 600; }
+
+/* detail */
+.detail td { background: #FAFBFD; padding: 0 14px 18px 54px; }
+.detail-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
 .items { width: 100%; border-collapse: collapse; font-size: 13px; }
-.items th, .items td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
-.items th { color: var(--muted); font-weight: 600; }
+.items th { text-align: left; font-weight: 600; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.items td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.items tr:last-child td { border-bottom: 0; }
 .items .num { text-align: right; }
-.disp-list { margin: 0; padding: 0; list-style: none; color: var(--muted); }
-.disp-list li + li { margin-top: 2px; }
+.disp { margin: 0; padding: 0; list-style: none; }
+.disp li { white-space: nowrap; }
+.disp li + li { margin-top: 4px; }
+.disp .muted { color: var(--muted); }
 
-/* ---- Status pill ---- */
-.pill {
-  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-  font-size: 13px; font-weight: 500;
+/* badges */
+.badge { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12.5px; font-weight: 600; padding: 3px 10px 3px 8px; border-radius: 999px; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.b-pending  { background: #FFF3DF; color: #9A5B00; }
+.b-progress { background: #E7EFFF; color: #1F4FBF; }
+.b-ready    { background: #F0EBFF; color: #5B3DB8; }
+.b-partial  { background: #DFF5F3; color: #0B6F69; }
+.b-done     { background: #E3F5EA; color: #1E7A45; }
+
+.f-pending  { background: var(--f-pending); }
+.f-progress { background: var(--f-progress); }
+.f-ready    { background: var(--f-ready); }
+.f-partial  { background: var(--f-partial); }
+.f-done     { background: var(--f-done); }
+
+/* ---------- States ---------- */
+.state { display: grid; place-items: center; min-height: 46vh; padding: 24px; }
+.state-box { text-align: center; max-width: 440px; }
+.state-box h2 { margin: 0 0 6px; font-size: 18px; }
+.state-box p { margin: 0; color: var(--muted); }
+.loader { width: 30px; height: 30px; margin: 0 auto 14px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+
+.foot { margin-top: 22px; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 22px; }
+  .hero h1 { font-size: 36px; }
+  .search { margin-left: 0; flex: 1 1 220px; }
+  .search input { width: 100%; }
 }
-.pill::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.s-pending  { color: var(--st-pending); }
-.s-progress { color: var(--st-progress); }
-.s-ready    { color: var(--st-ready); }
-.s-partial  { color: var(--st-partial); }
-.s-done     { color: var(--st-done); }
+@media (max-width: 760px) {
+  .wrap { padding: 0 14px; }
+  .status-line .upd { display: none; }
+  .meter { height: 46px; }
+  .tab { padding: 12px 12px 10px; }
 
-.bg-pending  { background: var(--st-pending); }
-.bg-progress { background: var(--st-progress); }
-.bg-ready    { background: var(--st-ready); }
-.bg-partial  { background: var(--st-partial); }
-.bg-done     { background: var(--st-done); }
-
-.notice { color: var(--muted); font-size: 14px; padding: 12px 0 16px; }
-
-.foot { text-align: center; color: var(--muted); font-size: 13px; padding-top: 8px; }
-
-/* ---- Mobile ---- */
-@media (max-width: 700px) {
-  .topbar { padding: 12px 16px; flex-wrap: wrap; }
-  main { padding: 16px 12px 32px; }
-  .block { padding: 18px 16px 6px; }
-  .table-wrap { margin: 0 -16px; padding: 0 16px 12px; }
-  .updated { font-size: 12px; }
+  /* tables → cards */
+  .tbl.cards thead { display: none; }
+  .tbl.cards, .tbl.cards tbody, .tbl.cards tr, .tbl.cards td { display: block; width: 100%; }
+  .tbl.cards tr { border-bottom: 1px solid var(--line); padding: 10px 14px; }
+  .tbl.cards td { border: 0; padding: 5px 0; display: flex; justify-content: space-between; gap: 16px; text-align: right; }
+  .tbl.cards td::before { content: attr(data-label); color: var(--muted); font-size: 12.5px; text-align: left; flex: 0 0 auto; }
+  .tbl.cards td.wr { max-width: none; }
+  .tbl.cards td.lead { font-size: 15px; }
+  .tbl.cards td.lead::before { content: none; }
+  .tbl.cards td.ctrl { display: none; }
+  .tbl.cards .prog { min-width: 0; width: 60%; }
+  .tbl.cards .empty-row td { display: block; text-align: center; }
+  .tbl.cards .empty-row td::before { content: none; }
+  .tbl.cards tr.detail { padding: 0 14px 14px; }
+  .tbl.cards tr.detail td { display: block; padding: 0; background: none; }
+  .tbl.cards tr.detail td::before { content: none; }
+  .order-row.open td { background: none; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .spinner { animation-duration: 2s; }
-  .flow-seg { transition: none; }
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
-
-</style>
+  </style>
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <div>
-        <div class="brand-name">Litpax Technology</div>
-        <div class="brand-sub">Status board for <strong id="clientName">—</strong></div>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <span class="updated" id="updatedAt">Loading…</span>
-      <button class="btn" id="refreshBtn" type="button">Refresh</button>
-    </div>
-  </header>
-
-  <!-- Loading / error screen -->
-  <div class="screen" id="screen">
-    <div class="screen-box">
-      <div class="spinner" id="spinner"></div>
-      <p id="screenMsg">Loading your dashboard…</p>
+<header class="band">
+  <div class="wrap band-top">
+    <div class="brand"><span class="brand-cell" aria-hidden="true"></span>Litpax Technology</div>
+    <div class="status-line">
+      <span class="live" id="live"><i></i><span id="liveTxt">Connecting</span></span>
+      <span class="upd" id="updatedAt"></span>
+      <button class="btn-ghost" id="refreshBtn" type="button" aria-label="Refresh data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        Refresh
+      </button>
     </div>
   </div>
 
-  <main id="app" hidden>
+  <div class="wrap hero">
+    <div>
+      <p class="hero-client">Status board for</p>
+      <h1 id="clientName">Loading…</h1>
+      <p class="hero-sub" id="heroSub">Orders, service calls and repairs with Litpax, updated live.</p>
+    </div>
+    <div>
+      <div class="meter-head">
+        <div class="meter-title"><b id="mTotal">—</b>batteries on order</div>
+        <div class="meter-pct"><b id="mPct">—</b> dispatched</div>
+      </div>
+      <div class="meter loading" id="meter" role="img" aria-label="Battery fulfilment"><div class="meter-empty"></div></div>
+      <div class="meter-legend" id="mLegend"></div>
+    </div>
+  </div>
+</header>
 
-    <section class="filters" aria-label="Date range">
-      <div class="chips" role="group" aria-label="Quick range">
-        <button class="chip" data-days="7"   type="button">7 days</button>
-        <button class="chip" data-days="30"  type="button">30 days</button>
-        <button class="chip" data-days="90"  type="button">90 days</button>
-        <button class="chip" data-days="all" type="button">All time</button>
+<nav class="tabs-bar" aria-label="Sections">
+  <div class="wrap tabs" role="tablist" id="tabs">
+    <button class="tab active" role="tab" data-tab="orders"  type="button"><span class="t-name">Orders</span><span class="t-meta" id="tm-orders">—</span></button>
+    <button class="tab"        role="tab" data-tab="calls"   type="button"><span class="t-name">Service calls</span><span class="t-meta" id="tm-calls">—</span></button>
+    <button class="tab"        role="tab" data-tab="repairs" type="button"><span class="t-name">Repairs</span><span class="t-meta" id="tm-repairs">—</span></button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <div class="state" id="state">
+    <div class="state-box">
+      <div class="loader" id="loader"></div>
+      <h2 id="stateTitle">Loading your dashboard</h2>
+      <p id="stateMsg">This takes a few seconds.</p>
+    </div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Date range" id="rangeSeg">
+        <button type="button" data-days="7">7 days</button>
+        <button type="button" data-days="30">30 days</button>
+        <button type="button" data-days="90">90 days</button>
+        <button type="button" data-days="all">All time</button>
       </div>
-      <div class="custom-range">
-        <label>From <input type="date" id="fromDate"></label>
-        <label>To <input type="date" id="toDate"></label>
+      <div class="dates">
+        <input class="field" type="date" id="fromDate" aria-label="From date">
+        <span>to</span>
+        <input class="field" type="date" id="toDate" aria-label="To date">
       </div>
-      <p class="filter-note">Open items always show. Completed items follow the date range.</p>
-    </section>
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input class="field" type="search" id="search" placeholder="Search" aria-label="Search">
+      </div>
+      <button class="btn" id="csvBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+        Download CSV
+      </button>
+      <p class="range-note">Open items always show. Completed items follow the selected dates.</p>
+    </div>
 
     <!-- ORDERS -->
-    <section class="block" id="ordersBlock">
-      <div class="block-head">
-        <h2>Orders</h2>
-        <p class="block-stats" id="ordersStats"></p>
-      </div>
-      <div class="flow" id="ordersFlow"></div>
-      <div class="legend" id="ordersLegend"></div>
-      <div class="table-wrap">
-        <table class="tbl" id="ordersTable">
-          <thead>
-            <tr>
-              <th></th><th>Order ID</th><th>Order date</th><th>Models</th>
-              <th class="num">Qty</th><th class="num">Produced</th><th class="num">Dispatched</th>
-              <th>Status</th><th>Last dispatch</th>
-            </tr>
-          </thead>
+    <section class="panel" id="p-orders" role="tabpanel">
+      <div class="panel-head"><div class="filters" id="f-orders"></div><p class="panel-sum" id="s-orders"></p></div>
+      <div class="tbl-wrap">
+        <table class="tbl cards" id="t-orders">
+          <thead><tr>
+            <th class="ctrl"></th><th>Order</th><th>Order date</th><th>Models</th>
+            <th>Progress</th><th>Status</th><th>Last dispatch</th>
+          </tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
 
-    <!-- SERVICE CALLS -->
-    <section class="block" id="callsBlock">
-      <div class="block-head">
-        <h2>Service calls</h2>
-        <p class="block-stats" id="callsStats"></p>
-      </div>
-      <div class="flow" id="callsFlow"></div>
-      <div class="legend" id="callsLegend"></div>
-      <div class="table-wrap">
-        <table class="tbl" id="callsTable">
-          <thead>
-            <tr>
-              <th>Call no.</th><th>Date</th><th>Customer</th><th>Issue</th>
-              <th>Solution</th><th>Status</th><th>Closed on</th>
-            </tr>
-          </thead>
+    <!-- CALLS -->
+    <section class="panel" id="p-calls" role="tabpanel" hidden>
+      <div class="panel-head"><div class="filters" id="f-calls"></div><p class="panel-sum" id="s-calls"></p></div>
+      <div class="tbl-wrap">
+        <table class="tbl cards" id="t-calls">
+          <thead><tr>
+            <th>Call no.</th><th>Date</th><th>Customer</th><th>Issue</th><th>Solution</th><th>Status</th><th>Closed on</th>
+          </tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
 
     <!-- REPAIRS -->
-    <section class="block" id="repairsBlock">
-      <div class="block-head">
-        <h2>Repairs</h2>
-        <p class="block-stats" id="repairsStats"></p>
-      </div>
-      <div class="flow" id="repairsFlow"></div>
-      <div class="legend" id="repairsLegend"></div>
-      <div class="table-wrap">
-        <table class="tbl" id="repairsTable">
-          <thead>
-            <tr>
-              <th>Repair ID</th><th>Received</th><th>Customer</th><th>Battery model</th><th>Serial no.</th>
-              <th>Problem</th><th class="num">Battery in / out</th><th class="num">Charger in / out</th>
-              <th>Status</th><th>Sent back on</th>
-            </tr>
-          </thead>
+    <section class="panel" id="p-repairs" role="tabpanel" hidden>
+      <div class="panel-head"><div class="filters" id="f-repairs"></div><p class="panel-sum" id="s-repairs"></p></div>
+      <div class="tbl-wrap">
+        <table class="tbl cards" id="t-repairs">
+          <thead><tr>
+            <th>Repair</th><th>Received</th><th>Customer</th><th>Battery</th><th>Problem</th>
+            <th class="num">Battery in / out</th><th class="num">Charger in / out</th><th>Status</th><th>Sent back on</th>
+          </tr></thead>
           <tbody></tbody>
         </table>
       </div>
     </section>
 
-    <footer class="foot">Data refreshes every 5 minutes. For any query, contact your Litpax account manager.</footer>
-  </main>
+    <p class="foot">Data refreshes every 5 minutes. For any query, contact your Litpax account manager.</p>
+  </div>
+</main>
 
-  <script src="config.js"></script>
+<script src="config.js"></script>
 <script>
-// =============================================
-// OEM Dashboard — app.js
-// Link format: index.html?k=<token>
-// =============================================
 (function () {
   'use strict';
 
+  // ---------- status definitions ----------
   const STATUS = {
     orders: [
-      { key: 'Pending',              label: 'Pending',            cls: 'pending'  },
-      { key: 'In Production',        label: 'In production',      cls: 'progress' },
-      { key: 'Ready for Dispatch',   label: 'Ready for dispatch', cls: 'ready'    },
-      { key: 'Partially Dispatched', label: 'Partly dispatched',  cls: 'partial'  },
-      { key: 'Dispatched',           label: 'Dispatched',         cls: 'done'     }
+      { key: 'Pending',              label: 'Not started',        c: 'pending'  },
+      { key: 'In Production',        label: 'In production',      c: 'progress' },
+      { key: 'Ready for Dispatch',   label: 'Ready to dispatch',  c: 'ready'    },
+      { key: 'Partially Dispatched', label: 'Partly dispatched',  c: 'partial'  },
+      { key: 'Dispatched',           label: 'Dispatched',         c: 'done'     }
     ],
     calls: [
-      { key: 'Open',   label: 'Open',   cls: 'pending' },
-      { key: 'Solved', label: 'Solved', cls: 'done'    }
+      { key: 'Open',   label: 'Open',   c: 'pending' },
+      { key: 'Solved', label: 'Solved', c: 'done'    }
     ],
     repairs: [
-      { key: 'Received',         label: 'With us for repair', cls: 'pending' },
-      { key: 'Partial Dispatch', label: 'Partly sent back',   cls: 'partial' },
-      { key: 'Dispatched',       label: 'Sent back',          cls: 'done'    }
+      { key: 'Received',         label: 'With us for repair', c: 'pending' },
+      { key: 'Partial Dispatch', label: 'Partly sent back',   c: 'partial' },
+      { key: 'Dispatched',       label: 'Sent back',          c: 'done'    }
     ]
   };
 
   const state = {
-    data: null,
+    data: null, tab: 'orders', q: '',
     from: null, to: null,
     filter: { orders: null, calls: null, repairs: null },
-    open: {},
-    loading: false,
-    loadedAt: 0
+    open: {}, loading: false, loadedAt: 0
   };
 
   const token = (new URLSearchParams(location.search).get('k') || '').trim();
   const $ = (id) => document.getElementById(id);
 
   // ---------- helpers ----------
-  function esc(v) {
-    return String(v == null ? '' : v)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-  function fmtN(n) { return Number(n || 0).toLocaleString('en-IN'); }
-  function iso(d) {
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
-  function def(section, key) {
-    return STATUS[section].find((d) => d.key === key) || { label: key, cls: 'pending' };
-  }
-  function pill(section, key) {
-    const d = def(section, key);
-    return '<span class="pill s-' + d.cls + '">' + esc(d.label) + '</span>';
-  }
-  function emptyRow(cols, msg) {
-    return '<tr class="empty"><td colspan="' + cols + '">' + esc(msg) + '</td></tr>';
-  }
+  const esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const n = (x) => Number(x || 0).toLocaleString('en-IN');
+  const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const def = (sec, key) => STATUS[sec].find((d) => d.key === key) || { label: key, c: 'pending' };
+  const badge = (sec, key) => { const d = def(sec, key); return '<span class="badge b-' + d.c + '">' + esc(d.label) + '</span>'; };
+  const td = (label, html, cls) => '<td data-label="' + esc(label) + '"' + (cls ? ' class="' + cls + '"' : '') + '>' + html + '</td>';
+  const emptyRow = (cols, msg) => '<tr class="empty-row"><td colspan="' + cols + '">' + esc(msg) + '</td></tr>';
+
   function inRange(isOpen, ts) {
     if (isOpen) return true;
     if (state.from == null && state.to == null) return true;
@@ -394,6 +438,11 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
     if (state.from != null && ts < state.from) return false;
     if (state.to != null && ts > state.to) return false;
     return true;
+  }
+  function matchQ(fields) {
+    if (!state.q) return true;
+    const q = state.q.toLowerCase();
+    return fields.some((f) => String(f || '').toLowerCase().indexOf(q) > -1);
   }
 
   // ---------- JSONP ----------
@@ -410,21 +459,25 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
     });
   }
 
-  // ---------- screens ----------
-  function showScreen(msg, spinning) {
-    $('screen').hidden = false;
+  // ---------- states ----------
+  function showState(title, msg, spinning) {
+    $('state').hidden = false;
     $('app').hidden = true;
-    $('spinner').hidden = !spinning;
-    $('screenMsg').textContent = msg;
-    $('updatedAt').textContent = '';
+    $('loader').hidden = !spinning;
+    $('stateTitle').textContent = title;
+    $('stateMsg').textContent = msg;
+  }
+  function setLive(txt, stale) {
+    $('liveTxt').textContent = txt;
+    $('live').classList.toggle('stale', !!stale);
   }
 
   // ---------- load ----------
   async function load() {
     if (state.loading) return;
     state.loading = true;
-    $('refreshBtn').disabled = true;
-    if (state.data) $('updatedAt').textContent = 'Refreshing…';
+    const btn = $('refreshBtn');
+    btn.disabled = true; btn.classList.add('spinning');
     try {
       const url = CONFIG.API_URL + '?action=getDashboard&k=' + encodeURIComponent(token) + '&_=' + Date.now();
       const res = await jsonp(url);
@@ -432,38 +485,43 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
       state.data = res;
       state.loadedAt = Date.now();
       $('clientName').textContent = res.client;
-      document.title = 'Status board | ' + res.client;
+      document.title = res.client + ' status board | Litpax Technology';
+      setLive('Live', false);
       $('updatedAt').textContent = 'Updated ' + res.updatedAt;
-      $('screen').hidden = true;
+      $('state').hidden = true;
       $('app').hidden = false;
       render();
     } catch (e) {
       fail(false);
     } finally {
       state.loading = false;
-      $('refreshBtn').disabled = false;
+      btn.disabled = false; btn.classList.remove('spinning');
     }
   }
 
   function fail(invalid) {
     if (invalid) {
       state.data = null;
-      showScreen('This link is not active. Please ask Litpax for a new dashboard link.', false);
+      $('clientName').textContent = 'Link not active';
       $('refreshBtn').hidden = true;
+      setLive('Offline', true);
+      showState('This link is not active', 'Ask your Litpax account manager for a new dashboard link.', false);
       return;
     }
     if (state.data) {
-      $('updatedAt').textContent = 'Refresh failed. Showing data from ' + state.data.updatedAt;
+      setLive('Showing last update', true);
     } else {
-      showScreen('The dashboard could not load. Check your internet connection and press Refresh.', false);
+      $('clientName').textContent = '—';
+      setLive('Offline', true);
+      showState('Dashboard did not load', 'Check your internet connection, then press Refresh.', false);
     }
   }
 
   // ---------- range ----------
   function setDays(days) {
-    document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('active', c.dataset.days === String(days)));
+    document.querySelectorAll('#rangeSeg button').forEach((b) => b.classList.toggle('active', b.dataset.days === String(days)));
     if (days === 'all') {
-      state.from = null; state.to = null;
+      state.from = state.to = null;
       $('fromDate').value = ''; $('toDate').value = '';
     } else {
       const to = new Date(); to.setHours(23, 59, 59, 999);
@@ -473,193 +531,286 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
     }
     render();
   }
-
   function onCustomRange() {
-    document.querySelectorAll('.chip').forEach((c) => c.classList.remove('active'));
+    document.querySelectorAll('#rangeSeg button').forEach((b) => b.classList.remove('active'));
     const f = $('fromDate').value, t = $('toDate').value;
     state.from = f ? new Date(f + 'T00:00:00').getTime() : null;
     state.to   = t ? new Date(t + 'T23:59:59').getTime() : null;
     render();
   }
 
-  // ---------- flow bar + legend ----------
-  function renderFlow(section, counts) {
-    const defs = STATUS[section];
-    const total = defs.reduce((s, d) => s + (counts[d.key] || 0), 0);
-    const f = state.filter[section];
-    const flow = $(section + 'Flow');
-    flow.classList.toggle('has-filter', !!f);
-    flow.innerHTML = total
-      ? defs.filter((d) => counts[d.key]).map((d) =>
-          '<div class="flow-seg bg-' + d.cls + (f === d.key ? ' on' : '') + '" style="flex:' + counts[d.key] + ' 1 0"' +
-          ' title="' + esc(d.label) + ': ' + counts[d.key] + '"></div>').join('')
-      : '<div class="flow-empty"></div>';
-
-    $(section + 'Legend').innerHTML = defs.map((d) =>
-      '<button type="button" class="leg' + (f === d.key ? ' on' : '') + '" data-sec="' + section + '" data-key="' + esc(d.key) + '"' +
-      ' aria-pressed="' + (f === d.key) + '"><span class="dot bg-' + d.cls + '"></span>' +
-      '<span class="n">' + fmtN(counts[d.key] || 0) + '</span>' + esc(d.label) + '</button>').join('');
-  }
-
-  function sourceDown(section, cols, msg) {
-    $(section + 'Flow').innerHTML = '<div class="flow-empty"></div>';
-    $(section + 'Legend').innerHTML = '';
-    $(section + 'Stats').textContent = '';
-    $(section + 'Table').querySelector('tbody').innerHTML = emptyRow(cols, msg);
-  }
+  // ---------- data slices ----------
+  const vOrders  = () => (state.data.orders  || []).filter((o) => inRange(o.status !== 'Dispatched', o.lastDispatchTs || o.ts));
+  const vCalls   = () => (state.data.calls   || []).filter((c) => inRange(!c.closed, c.closedTs || c.ts));
+  const vRepairs = () => (state.data.repairs || []).filter((r) => inRange(r.pending > 0, r.dispatchTs || r.ts));
+  const callKey  = (c) => (c.closed ? 'Solved' : 'Open');
 
   // ---------- render ----------
   function render() {
     if (!state.data) return;
+    renderHero();
+    renderTabs();
     renderOrders();
     renderCalls();
     renderRepairs();
   }
 
+  // Hero meter: battery qty split across all items in range
+  function renderHero() {
+    const meter = $('meter');
+    meter.classList.remove('loading');
+    if (state.data.orders === null) {
+      meter.innerHTML = '<div class="meter-empty"></div>';
+      $('mTotal').textContent = '—'; $('mPct').textContent = '—';
+      $('mLegend').innerHTML = '<span>Order data is not available right now.</span>';
+      return;
+    }
+    const b = { done: 0, ready: 0, progress: 0, pending: 0 };
+    let total = 0;
+    vOrders().forEach((o) => o.items.forEach((i) => {
+      const q = i.qty || 0;
+      const d = Math.min(i.dispatched, q);
+      const p = Math.min(Math.max(i.produced, d), q);
+      total += q; b.done += d; b.ready += p - d;
+      if (i.status === 'Pending') b.pending += q - p; else b.progress += q - p;
+    }));
+    const parts = [
+      { k: 'done',     label: 'dispatched'        },
+      { k: 'ready',    label: 'ready to dispatch' },
+      { k: 'progress', label: 'in production'     },
+      { k: 'pending',  label: 'not started'       }
+    ];
+    meter.innerHTML = total
+      ? parts.filter((p) => b[p.k] > 0).map((p, idx) =>
+          '<div class="meter-seg f-' + p.k + '" style="flex:' + b[p.k] + ' 1 0;animation-delay:' + (idx * 0.08) + 's" title="' + n(b[p.k]) + ' ' + p.label + '"></div>').join('')
+      : '<div class="meter-empty"></div>';
+    $('mTotal').textContent = n(total);
+    $('mPct').textContent = total ? Math.round((b.done / total) * 100) + '%' : '0%';
+    $('mLegend').innerHTML = parts.map((p) =>
+      '<span><i class="f-' + p.k + '"></i><b>' + n(b[p.k]) + '</b> ' + p.label + '</span>').join('');
+    $('meter').setAttribute('aria-label', parts.map((p) => n(b[p.k]) + ' ' + p.label).join(', '));
+  }
+
+  function renderTabs() {
+    const d = state.data;
+    const o = d.orders, c = d.calls, r = d.repairs;
+    $('tm-orders').innerHTML = o === null ? 'Unavailable'
+      : n(o.filter((x) => x.status !== 'Dispatched').length) + ' open';
+    const openCalls = c ? c.filter((x) => !x.closed).length : 0;
+    $('tm-calls').innerHTML = c === null ? 'Unavailable'
+      : openCalls ? '<span class="alert">' + n(openCalls) + ' open</span>' : 'All solved';
+    const withUs = r ? r.reduce((s, x) => s + Math.max(0, x.battRcv - x.battDisp), 0) : 0;
+    $('tm-repairs').innerHTML = r === null ? 'Unavailable'
+      : withUs ? n(withUs) + ' batteries with us' : 'Nothing pending';
+    document.querySelectorAll('.tab').forEach((t) => {
+      const on = t.dataset.tab === state.tab;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on);
+    });
+    ['orders', 'calls', 'repairs'].forEach((k) => { $('p-' + k).hidden = k !== state.tab; });
+    $('search').placeholder = { orders: 'Search order ID or model', calls: 'Search customer or issue', repairs: 'Search repair ID, model or serial' }[state.tab];
+  }
+
+  function renderFilters(sec, counts) {
+    const f = state.filter[sec];
+    $('f-' + sec).innerHTML = STATUS[sec].map((d) =>
+      '<button type="button" class="fchip' + (f === d.key ? ' on' : '') + '" data-sec="' + sec + '" data-key="' + esc(d.key) + '" aria-pressed="' + (f === d.key) + '">' +
+      '<i class="f-' + d.c + '"></i>' + esc(d.label) + ' <b>' + n(counts[d.key] || 0) + '</b></button>').join('');
+  }
+
+  function unavailable(sec, cols, msg) {
+    $('f-' + sec).innerHTML = '';
+    $('s-' + sec).textContent = '';
+    $('t-' + sec).querySelector('tbody').innerHTML = emptyRow(cols, msg);
+  }
+
+  // ----- Orders -----
+  function orderRows() {
+    const list = vOrders().filter((o) => matchQ([o.orderId, ...o.items.map((i) => i.model), ...o.items.map((i) => i.type)]));
+    return state.filter.orders ? list.filter((o) => o.status === state.filter.orders) : list;
+  }
+
   function renderOrders() {
-    const list = state.data.orders;
-    if (list === null) { sourceDown('orders', 9, 'Order data is not available right now. Please try again later.'); return; }
+    if (state.data.orders === null) { unavailable('orders', 7, 'Order data is not available right now.'); return; }
+    const vis = vOrders();
+    const counts = {}; vis.forEach((o) => { counts[o.status] = (counts[o.status] || 0) + 1; });
+    renderFilters('orders', counts);
+    $('s-orders').innerHTML = '<b>' + n(vis.length) + '</b> orders in view';
 
-    const visible = list.filter((o) => inRange(o.status !== 'Dispatched', o.lastDispatchTs || o.ts));
-    const counts = {};
-    visible.forEach((o) => { counts[o.status] = (counts[o.status] || 0) + 1; });
-    renderFlow('orders', counts);
-
-    const q = visible.reduce((a, o) => { a.qty += o.qty; a.prod += o.produced; a.disp += o.dispatched; return a; }, { qty: 0, prod: 0, disp: 0 });
-    $('ordersStats').innerHTML =
-      '<b>' + fmtN(visible.length) + '</b> orders, <b>' + fmtN(q.qty) + '</b> batteries ordered, <b>' +
-      fmtN(q.prod) + '</b> produced, <b>' + fmtN(q.disp) + '</b> dispatched';
-
-    const rows = state.filter.orders ? visible.filter((o) => o.status === state.filter.orders) : visible;
-    const tb = $('ordersTable').querySelector('tbody');
-    if (!rows.length) { tb.innerHTML = emptyRow(9, 'No orders for this selection.'); return; }
+    const rows = orderRows();
+    const tb = $('t-orders').querySelector('tbody');
+    if (!rows.length) { tb.innerHTML = emptyRow(7, state.q ? 'No orders match your search.' : 'No orders for these dates.'); return; }
 
     tb.innerHTML = rows.map((o) => {
       const open = !!state.open[o.orderId];
       const models = Array.from(new Set(o.items.map((i) => i.model).filter(Boolean))).join(', ');
+      const q = o.qty || 0;
+      const d = Math.min(o.dispatched, q), p = Math.min(Math.max(o.produced, d), q);
+      const pct = (x) => (q ? (x / q) * 100 : 0).toFixed(2) + '%';
+      const prog = '<div class="prog"><div class="prog-bar">' +
+        '<span class="f-done" style="width:' + pct(d) + '"></span>' +
+        '<span class="f-ready" style="width:' + pct(p - d) + '"></span></div>' +
+        '<div class="prog-txt"><b>' + n(q) + '</b> ordered, ' + n(p) + ' made, ' + n(d) + ' sent</div></div>';
       return '<tr class="order-row' + (open ? ' open' : '') + '" data-oid="' + esc(o.orderId) + '">' +
-        '<td><button class="toggle" type="button" aria-expanded="' + open + '" aria-label="Show items of ' + esc(o.orderId) + '">▶</button></td>' +
-        '<td class="nowrap"><b>' + esc(o.orderId) + '</b></td>' +
-        '<td class="nowrap">' + esc(o.date || '—') + '</td>' +
-        '<td class="wrap">' + esc(models || '—') + '</td>' +
-        '<td class="num">' + fmtN(o.qty) + '</td>' +
-        '<td class="num">' + fmtN(o.produced) + '</td>' +
-        '<td class="num">' + fmtN(o.dispatched) + '</td>' +
-        '<td>' + pill('orders', o.status) + '</td>' +
-        '<td class="nowrap">' + esc(o.lastDispatch || '—') + '</td>' +
+        '<td class="ctrl"><button class="chev" type="button" aria-expanded="' + open + '" aria-label="Show items in ' + esc(o.orderId) + '">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></td>' +
+        td('Order', '<span class="id">' + esc(o.orderId) + '</span>', 'nw lead') +
+        td('Order date', esc(o.date || '—'), 'nw') +
+        td('Models', esc(models || '—'), 'wr') +
+        td('Progress', prog) +
+        td('Status', badge('orders', o.status)) +
+        td('Last dispatch', esc(o.lastDispatch || '—'), 'nw') +
       '</tr>' + (open ? detailRow(o) : '');
     }).join('');
   }
 
   function detailRow(o) {
-    return '<tr class="detail-row"><td colspan="9"><table class="items"><thead><tr>' +
-      '<th>Model</th><th>Type</th><th class="num">Qty</th><th class="num">Produced</th>' +
-      '<th class="num">Dispatched</th><th>Status</th><th>Dispatch details</th></tr></thead><tbody>' +
-      o.items.map((i) =>
-        '<tr><td>' + esc(i.model || '—') + '</td><td>' + esc(i.type || '—') + '</td>' +
-        '<td class="num">' + fmtN(i.qty) + '</td><td class="num">' + fmtN(i.produced) + '</td>' +
-        '<td class="num">' + fmtN(i.dispatched) + '</td><td>' + pill('orders', i.status) + '</td>' +
-        '<td>' + dispList(i.dispatches) + '</td></tr>').join('') +
-      '</tbody></table></td></tr>';
+    return '<tr class="detail"><td colspan="7"><div class="detail-box"><table class="items"><thead><tr>' +
+      '<th>Model</th><th>Type</th><th class="num">Qty</th><th class="num">Made</th><th class="num">Sent</th><th>Status</th><th>Dispatches</th>' +
+      '</tr></thead><tbody>' +
+      o.items.map((i) => '<tr><td>' + esc(i.model || '—') + '</td><td>' + esc(i.type || '—') + '</td>' +
+        '<td class="num">' + n(i.qty) + '</td><td class="num">' + n(i.produced) + '</td><td class="num">' + n(i.dispatched) + '</td>' +
+        '<td>' + badge('orders', i.status) + '</td><td>' + dispList(i.dispatches) + '</td></tr>').join('') +
+      '</tbody></table></div></td></tr>';
   }
 
   function dispList(arr) {
     if (!arr || !arr.length) return '<span class="sub">Not dispatched yet</span>';
-    return '<ul class="disp-list">' + arr.map((d) =>
-      '<li>' + esc([d.date, fmtN(d.qty) + ' pcs', d.transport, d.vehicle, d.lr ? 'LR ' + d.lr : ''].filter(Boolean).join(', ')) + '</li>'
-    ).join('') + '</ul>';
+    return '<ul class="disp">' + arr.map((d) => {
+      const meta = [d.transport, d.vehicle, d.lr ? 'LR ' + d.lr : ''].filter(Boolean).join(', ');
+      return '<li><b>' + esc(d.date) + '</b> ' + n(d.qty) + ' pcs' + (meta ? ' <span class="muted">' + esc(meta) + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
+
+  // ----- Calls -----
+  function callRows() {
+    const list = vCalls().filter((c) => matchQ([c.srNo, c.customer, c.about, c.solution]));
+    return state.filter.calls ? list.filter((c) => callKey(c) === state.filter.calls) : list;
   }
 
   function renderCalls() {
-    const list = state.data.calls;
-    if (list === null) { sourceDown('calls', 7, 'Service call data is not available right now.'); return; }
+    if (state.data.calls === null) { unavailable('calls', 7, 'Service call data is not available right now.'); return; }
+    const vis = vCalls();
+    const counts = { Open: 0, Solved: 0 }; vis.forEach((c) => counts[callKey(c)]++);
+    renderFilters('calls', counts);
+    $('s-calls').innerHTML = '<b>' + n(vis.length) + '</b> calls in view';
 
-    const visible = list.filter((c) => inRange(!c.closed, c.closedTs || c.ts));
-    const counts = { Open: 0, Solved: 0 };
-    visible.forEach((c) => { counts[c.closed ? 'Solved' : 'Open']++; });
-    renderFlow('calls', counts);
-    $('callsStats').innerHTML =
-      '<b>' + fmtN(visible.length) + '</b> calls, <b>' + fmtN(counts.Solved) + '</b> solved, <b>' + fmtN(counts.Open) + '</b> open';
+    const rows = callRows();
+    const tb = $('t-calls').querySelector('tbody');
+    if (!rows.length) { tb.innerHTML = emptyRow(7, state.q ? 'No calls match your search.' : 'No service calls for these dates.'); return; }
 
-    const f = state.filter.calls;
-    const rows = f ? visible.filter((c) => (c.closed ? 'Solved' : 'Open') === f) : visible;
-    const tb = $('callsTable').querySelector('tbody');
-    if (!rows.length) { tb.innerHTML = emptyRow(7, 'No service calls for this selection.'); return; }
+    tb.innerHTML = rows.map((c) => '<tr>' +
+      td('Call no.', '<span class="id">#' + esc(c.srNo) + '</span>', 'nw lead') +
+      td('Date', esc(c.date || '—'), 'nw') +
+      td('Customer', esc(c.customer || '—')) +
+      td('Issue', esc(c.about || '—'), 'wr') +
+      td('Solution', esc(c.solution || '—'), 'wr') +
+      td('Status', badge('calls', callKey(c))) +
+      td('Closed on', esc(c.closedDate || '—') + (c.timeTaken ? '<span class="sub">' + esc(c.timeTaken) + '</span>' : ''), 'nw') +
+    '</tr>').join('');
+  }
 
-    tb.innerHTML = rows.map((c) =>
-      '<tr><td class="nowrap">' + esc(c.srNo) + '</td>' +
-      '<td class="nowrap">' + esc(c.date || '—') + '</td>' +
-      '<td>' + esc(c.customer || '—') + '</td>' +
-      '<td class="wrap">' + esc(c.about || '—') + '</td>' +
-      '<td class="wrap">' + esc(c.solution || '—') + '</td>' +
-      '<td>' + pill('calls', c.closed ? 'Solved' : 'Open') + '</td>' +
-      '<td class="nowrap">' + esc(c.closedDate || '—') +
-        (c.timeTaken ? '<span class="sub">' + esc(c.timeTaken) + '</span>' : '') + '</td></tr>'
-    ).join('');
+  // ----- Repairs -----
+  function repairRows() {
+    const list = vRepairs().filter((r) => matchQ([r.repairId, r.customer, r.batteryModel, r.batterySr, r.problem, r.chargerModel]));
+    return state.filter.repairs ? list.filter((r) => r.status === state.filter.repairs) : list;
   }
 
   function renderRepairs() {
-    const list = state.data.repairs;
-    if (list === null) { sourceDown('repairs', 10, 'Repair data is not available right now.'); return; }
+    if (state.data.repairs === null) { unavailable('repairs', 9, 'Repair data is not available right now.'); return; }
+    const vis = vRepairs();
+    const counts = {}; vis.forEach((r) => { counts[r.status] = (counts[r.status] || 0) + 1; });
+    renderFilters('repairs', counts);
+    const t = vis.reduce((a, r) => { a.i += r.battRcv; a.o += r.battDisp; return a; }, { i: 0, o: 0 });
+    $('s-repairs').innerHTML = '<b>' + n(t.i) + '</b> batteries received, <b>' + n(t.o) + '</b> sent back';
 
-    const visible = list.filter((r) => inRange(r.pending > 0, r.dispatchTs || r.ts));
-    const counts = {};
-    visible.forEach((r) => { counts[r.status] = (counts[r.status] || 0) + 1; });
-    renderFlow('repairs', counts);
+    const rows = repairRows();
+    const tb = $('t-repairs').querySelector('tbody');
+    if (!rows.length) { tb.innerHTML = emptyRow(9, state.q ? 'No repairs match your search.' : 'No repairs for these dates.'); return; }
 
-    const t = visible.reduce((a, r) => {
-      a.bIn += r.battRcv; a.bOut += r.battDisp; a.cIn += r.chgRcv; a.cOut += r.chgDisp; return a;
-    }, { bIn: 0, bOut: 0, cIn: 0, cOut: 0 });
-    let stats = '<b>' + fmtN(t.bIn) + '</b> batteries received, <b>' + fmtN(t.bOut) + '</b> sent back, <b>' +
-      fmtN(Math.max(0, t.bIn - t.bOut)) + '</b> still with us';
-    if (t.cIn > 0) stats += '. Chargers: <b>' + fmtN(t.cIn) + '</b> received, <b>' + fmtN(t.cOut) + '</b> sent back';
-    $('repairsStats').innerHTML = stats;
+    tb.innerHTML = rows.map((r) => '<tr>' +
+      td('Repair', '<span class="id">' + esc(r.repairId) + '</span>', 'nw lead') +
+      td('Received', esc(r.date || '—'), 'nw') +
+      td('Customer', esc(r.customer || '—')) +
+      td('Battery', esc(r.batteryModel || '—') +
+        (r.batterySr ? '<span class="sub">Sr. ' + esc(r.batterySr) + '</span>' : '') +
+        (r.chargerModel ? '<span class="sub">Charger: ' + esc(r.chargerModel) + '</span>' : '')) +
+      td('Problem', esc(r.problem || r.problemDesc || '—') +
+        (r.actualProblem ? '<span class="sub">Found: ' + esc(r.actualProblem) + '</span>' : ''), 'wr') +
+      td('Battery in / out', n(r.battRcv) + ' / ' + n(r.battDisp), 'num') +
+      td('Charger in / out', r.chgRcv ? n(r.chgRcv) + ' / ' + n(r.chgDisp) : '—', 'num') +
+      td('Status', badge('repairs', r.status)) +
+      td('Sent back on', esc(r.dispatchDate || '—'), 'nw') +
+    '</tr>').join('');
+  }
 
-    const rows = state.filter.repairs ? visible.filter((r) => r.status === state.filter.repairs) : visible;
-    const tb = $('repairsTable').querySelector('tbody');
-    if (!rows.length) { tb.innerHTML = emptyRow(10, 'No repairs for this selection.'); return; }
-
-    tb.innerHTML = rows.map((r) =>
-      '<tr><td class="nowrap"><b>' + esc(r.repairId) + '</b></td>' +
-      '<td class="nowrap">' + esc(r.date || '—') + '</td>' +
-      '<td>' + esc(r.customer || '—') + '</td>' +
-      '<td>' + esc(r.batteryModel || '—') + (r.chargerModel ? '<span class="sub">Charger: ' + esc(r.chargerModel) + '</span>' : '') + '</td>' +
-      '<td class="nowrap">' + esc(r.batterySr || '—') + '</td>' +
-      '<td class="wrap">' + esc(r.problem || r.problemDesc || '—') +
-        (r.actualProblem ? '<span class="sub">Found: ' + esc(r.actualProblem) + '</span>' : '') + '</td>' +
-      '<td class="num">' + fmtN(r.battRcv) + ' / ' + fmtN(r.battDisp) + '</td>' +
-      '<td class="num">' + (r.chgRcv ? fmtN(r.chgRcv) + ' / ' + fmtN(r.chgDisp) : '—') + '</td>' +
-      '<td>' + pill('repairs', r.status) + '</td>' +
-      '<td class="nowrap">' + esc(r.dispatchDate || '—') + '</td></tr>'
-    ).join('');
+  // ---------- CSV ----------
+  function csvCell(v) {
+    let s = String(v == null ? '' : v);
+    if (/^[=+\-@]/.test(s)) s = "'" + s;          // formula injection guard
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  function downloadCSV() {
+    if (!state.data) return;
+    const client = (state.data.client || 'client').replace(/[^\w-]+/g, '_');
+    const stamp = iso(new Date());
+    let head, rows, name;
+    if (state.tab === 'orders') {
+      name = 'orders';
+      head = ['Order ID', 'Order date', 'Model', 'Type', 'Qty', 'Produced', 'Dispatched', 'Item status', 'Order status', 'Dispatch dates'];
+      rows = [];
+      orderRows().forEach((o) => o.items.forEach((i) => rows.push([
+        o.orderId, o.date, i.model, i.type, i.qty, i.produced, i.dispatched,
+        def('orders', i.status).label, def('orders', o.status).label,
+        (i.dispatches || []).map((d) => d.date + ' (' + d.qty + ')').join('; ')
+      ])));
+    } else if (state.tab === 'calls') {
+      name = 'service_calls';
+      head = ['Call no.', 'Date', 'Customer', 'Issue', 'Solution', 'Status', 'Closed on', 'Time taken'];
+      rows = callRows().map((c) => [c.srNo, c.date, c.customer, c.about, c.solution, callKey(c), c.closedDate, c.timeTaken]);
+    } else {
+      name = 'repairs';
+      head = ['Repair ID', 'Received', 'Customer', 'Battery model', 'Serial no.', 'Charger model', 'Problem', 'Found', 'Battery in', 'Battery out', 'Charger in', 'Charger out', 'Status', 'Sent back on'];
+      rows = repairRows().map((r) => [r.repairId, r.date, r.customer, r.batteryModel, r.batterySr, r.chargerModel,
+        r.problem || r.problemDesc, r.actualProblem, r.battRcv, r.battDisp, r.chgRcv, r.chgDisp, def('repairs', r.status).label, r.dispatchDate]);
+    }
+    const csv = [head].concat(rows).map((r) => r.map(csvCell).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = client + '_' + name + '_' + stamp + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   // ---------- events ----------
   document.addEventListener('click', (e) => {
-    const chip = e.target.closest('.chip');
-    if (chip) { setDays(chip.dataset.days); return; }
+    const tab = e.target.closest('.tab');
+    if (tab) { state.tab = tab.dataset.tab; render(); return; }
 
-    const leg = e.target.closest('.leg');
-    if (leg) {
-      const sec = leg.dataset.sec, key = leg.dataset.key;
+    const rb = e.target.closest('#rangeSeg button');
+    if (rb) { setDays(rb.dataset.days); return; }
+
+    const fc = e.target.closest('.fchip');
+    if (fc) {
+      const sec = fc.dataset.sec, key = fc.dataset.key;
       state.filter[sec] = state.filter[sec] === key ? null : key;
-      render();
-      return;
+      render(); return;
     }
 
     const row = e.target.closest('.order-row');
-    if (row) {
-      const id = row.dataset.oid;
-      state.open[id] = !state.open[id];
-      renderOrders();
-    }
+    if (row) { const id = row.dataset.oid; state.open[id] = !state.open[id]; renderOrders(); }
   });
 
+  let qTimer;
+  $('search').addEventListener('input', (e) => {
+    clearTimeout(qTimer);
+    qTimer = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 150);
+  });
   $('fromDate').addEventListener('change', onCustomRange);
   $('toDate').addEventListener('change', onCustomRange);
   $('refreshBtn').addEventListener('click', load);
+  $('csvBtn').addEventListener('click', downloadCSV);
 
-  // Auto-refresh — sirf tab visible ho tab
   setInterval(() => { if (!document.hidden && state.data) load(); }, CONFIG.REFRESH_MS);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && state.data && Date.now() - state.loadedAt > CONFIG.REFRESH_MS) load();
@@ -667,14 +818,16 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; }
 
   // ---------- init ----------
   if (!token) {
-    showScreen('This link is incomplete. Please use the full dashboard link shared by Litpax.', false);
+    $('clientName').textContent = 'Link incomplete';
     $('refreshBtn').hidden = true;
+    $('meter').classList.remove('loading');
+    setLive('Offline', true);
+    showState('This link is incomplete', 'Open the full dashboard link shared by Litpax.', false);
   } else {
     setDays(CONFIG.DEFAULT_DAYS);
     load();
   }
 })();
-
 </script>
 </body>
 </html>
